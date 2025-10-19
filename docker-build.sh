@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build the Docker image
-docker build -t imeteo-stations .
+docker build -t imeteo-stations . --no-cache
 
 echo "Docker image built successfully!"
 echo ""
