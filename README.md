@@ -115,6 +115,99 @@ docker run --rm imeteo-stations --help
 }
 ```
 
+## Troubleshooting
+
+### Common Issues
+
+#### Data Unavailable Error
+```
+Data unavailable: No weather data available for station X in the last 40 minutes.
+```
+
+**What it means:** The system searched 8 time windows (40 minutes of data) but couldn't find data for this station.
+
+**Possible causes:**
+- SHMU service delay (data publishes every 5 minutes)
+- Station temporarily offline for maintenance
+- Brief service outage
+
+**What to do:**
+- Wait 5-10 minutes and try again
+- Verify station ID with `docker run --rm imeteo-stations list-stations`
+- Check service health: `docker run --rm imeteo-stations health`
+
+#### Network Error
+```
+Network error: Connection failed to SHMU servers
+```
+
+**Possible causes:**
+- No internet connection
+- Firewall blocking access to opendata.shmu.sk
+- SHMU server is temporarily unreachable
+
+**What to do:**
+- Check your internet connection
+- Verify you can reach `https://opendata.shmu.sk`
+- Try again in a few moments
+
+#### Station Not Found
+```
+Error: Station ID 'XXXXX' not found
+```
+
+**What it means:** The provided station ID doesn't exist in the database.
+
+**What to do:**
+- List all stations: `docker run --rm imeteo-stations list-stations`
+- Search by name: `docker run --rm imeteo-stations search --query "Bratislava"`
+
+#### Request Timeout
+```
+Timeout for URL: https://...
+```
+
+**What it means:** Request took longer than the timeout setting (default 30 seconds).
+
+**Possible causes:**
+- Slow internet connection
+- SHMU server overloaded
+
+**What to do:**
+- Increase timeout with `--timeout` flag:
+```bash
+# Increase to 60 seconds
+docker run --rm imeteo-stations fetch --station-id 11816 --timeout 60
+
+# For slow connections, try 120 seconds
+docker run --rm imeteo-stations fetch-all --timeout 120
+```
+
+### Exit Codes
+
+The tool uses these exit codes for automation and scripting:
+
+| Code | Meaning | Action |
+|------|---------|--------|
+| 0 | Success | Data retrieved successfully |
+| 1 | Not found | Station ID invalid or not found |
+| 2 | Data unavailable | No data in last 40 minutes |
+| 3 | Transformation error | Data processing failed |
+| 4 | Network error | Connection/network issues |
+| 5 | Unexpected error | Unhandled exception |
+
+### Getting Help
+
+Run with `--debug` flag for detailed logs:
+```bash
+docker run --rm imeteo-stations fetch --station-id 11816 --debug
+```
+
+Check service status:
+```bash
+docker run --rm imeteo-stations health
+```
+
 ## Station Coverage
 
 95 automatic weather stations across Slovakia:
